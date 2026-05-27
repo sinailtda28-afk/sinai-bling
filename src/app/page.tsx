@@ -170,10 +170,6 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [checkStatus]);
 
-  const handleConnect = () => {
-    window.location.href = "/api/auth/login";
-  };
-
   const handleDisconnect = async () => {
     try {
       await fetch("/api/auth/disconnect", { method: "POST" });
@@ -232,12 +228,12 @@ export default function Home() {
                 Desconectar
               </button>
             ) : (
-              <button
-                onClick={handleConnect}
-                className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
+              <a
+                href="/api/auth/login"
+                className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer inline-block"
               >
                 Conectar ao Bling
-              </button>
+              </a>
             )}
           </div>
         </div>
@@ -340,12 +336,12 @@ export default function Home() {
               Para ver seus pedidos e o status da conexao, clique no botao abaixo para
               conectar sua conta do Bling.
             </p>
-            <button
-              onClick={handleConnect}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium cursor-pointer"
+            <a
+              href="/api/auth/login"
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium cursor-pointer inline-block"
             >
               Conectar ao Bling
-            </button>
+            </a>
           </div>
         )}
       </main>
