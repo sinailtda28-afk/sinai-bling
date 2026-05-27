@@ -16,26 +16,36 @@ export async function GET() {
     );
   }
 
-  const response = new NextResponse(
-    `<!DOCTYPE html>
+  const html = `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><title>Conectando ao Bling...</title></head>
 <body style="font-family:sans-serif;text-align:center;padding:40px">
 <h2>Sinai Multimarcas</h2>
 <p>Redirecionando para o Bling...</p>
-<p style="margin-top:20px">Se nao redirecionar automaticamente:</p>
-<a href="${authUrl.replace(/"/g, '&quot;')}" style="color:blue">Clique aqui para conectar ao Bling</a>
-<script>window.location.href="${authUrl.replace(/"/g, '\\"')}"</script>
+<noscript>
+<p style="color:red"><b>JavaScript desabilitado.</b> Use o link abaixo:</p>
+</noscript>
+<p style="margin-top:20px"><a href="${authUrl}" style="display:inline-block;padding:12px 24px;background:#2563eb;color:white;text-decoration:none;border-radius:8px;font-size:16px">Conectar ao Bling</a></p>
+<script>
+setTimeout(function() {
+  window.location.href = "${authUrl}";
+}, 500);
+</script>
 </body>
-</html>`,
-    {
-      status: 200,
-      headers: {
-        "Content-Type": "text/html; charset=utf-8",
-        "Set-Cookie": `bling_oauth_state=${state}; Path=/; Max-Age=600; Secure; HttpOnly; SameSite=Lax`,
-      },
-    }
-  );
+</html>`;
+
+  const response = new NextResponse(html, {
+    status: 200,
+    headers: { "Content-Type": "text/html; charset=utf-8" },
+  });
+
+  response.cookies.set("bling_oauth_state", state, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax",
+    maxAge: 600,
+    path: "/",
+  });
 
   return response;
 }
