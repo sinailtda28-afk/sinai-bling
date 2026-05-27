@@ -1,29 +1,41 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { getAuthUrl } from "@/lib/bling";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   const state = crypto.randomBytes(16).toString("hex");
+  let authUrl: string;
 
   try {
-    const authUrl = getAuthUrl(state);
-
-    const response = NextResponse.redirect(authUrl);
-
-    response.cookies.set("bling_oauth_state", state, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "lax",
-      maxAge: 600,
-      path: "/",
-    });
-
-    return response;
+    authUrl = getAuthUrl(state);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Erro desconhecido";
-    const host = request.headers.get("host") || "";
-    const proto = request.headers.get("x-forwarded-proto") || "https";
-    const baseUrl = `${proto}://${host}`;
-    return NextResponse.redirect(new URL(`/?error=${encodeURIComponent(message)}`, baseUrl));
+    const message = error instanceof Error ? error.message : "Erro";
+    return new NextResponse(
+      `<!DOCTYPE html><html><head><title>Sinai</title><meta charset="utf-8"></head><body style="font-family:sans-serif;text-align:center;padding:40px"><h2>Erro</h2><p>${message}</p></body></html>`,
+      { status: 500, headers: { "Content-Type": "text/html; charset=utf-8" } }
+    );
   }
+
+  const response = new NextResponse(
+    `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Conectando ao Bling...</title></head>
+<body style="font-family:sans-serif;text-align:center;padding:40px">
+<h2>Sinai Multimarcas</h2>
+<p>Redirecionando para o Bling...</p>
+<p style="margin-top:20px">Se nao redirecionar automaticamente:</p>
+<a href="${authUrl.replace(/"/g, '&quot;')}" style="color:blue">Clique aqui para conectar ao Bling</a>
+<script>window.location.href="${authUrl.replace(/"/g, '\\"')}"</script>
+</body>
+</html>`,
+    {
+      status: 200,
+      headers: {
+        "Content-Type": "text/html; charset=utf-8",
+        "Set-Cookie": `bling_oauth_state=${state}; Path=/; Max-Age=600; Secure; HttpOnly; SameSite=Lax`,
+      },
+    }
+  );
+
+  return response;
 }
