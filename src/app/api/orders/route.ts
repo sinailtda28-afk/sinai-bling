@@ -40,12 +40,19 @@ export async function GET(request: NextRequest) {
       });
 
       const encryptedToken = encrypt(JSON.stringify(updatedToken));
+      let domain: string | undefined;
+      try {
+        const host = request.headers.get("host") || "";
+        const hostname = host.split(":")[0];
+        if (hostname !== "localhost" && hostname !== "127.0.0.1") domain = hostname;
+      } catch {}
       response.cookies.set("bling_token", encryptedToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: true,
         sameSite: "lax",
         maxAge: 60 * 60 * 24 * 30,
         path: "/",
+        domain,
       });
 
       return response;
